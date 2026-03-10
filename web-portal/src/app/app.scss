@@ -1,0 +1,177 @@
+/* Fundo geral para dar destaque ao chat */
+.xsig-theme {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #e2e8f0; /* Fundo cinza escuro para destacar o chat branco */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+}
+
+/* Container Principal */
+.chat-container {
+  width: 100%;
+  max-width: 800px;
+  height: 80vh;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15); /* Sombra elegante */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+}
+
+/* Cabeçalho com Azul FAPEMAT garantido */
+.chat-header {
+  background: linear-gradient(135deg, #1E3A8A, #3b82f6);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-avatar {
+  font-size: 2rem;
+  background: rgba(255,255,255,0.2);
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.header-info h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #4ade80; /* Verde online */
+  border-radius: 50%;
+  box-shadow: 0 0 8px #4ade80;
+}
+
+.status p {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+/* Área de Mensagens */
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #f8fafc;
+}
+
+.message-row {
+  display: flex;
+  width: 100%;
+}
+
+.message-row.usuario { justify-content: flex-end; }
+.message-row.ia { justify-content: flex-start; }
+
+.message-bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 1rem;
+  line-height: 1.5;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Cores das Bolhas (AGORA VAI FUNCIONAR!) */
+.message-row.ia .message-bubble {
+  background-color: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-top-left-radius: 2px;
+}
+
+.message-row.usuario .message-bubble {
+  background-color: #10B981; /* Verde sólido garantido */
+  color: #ffffff; /* Texto branco */
+  border-top-right-radius: 2px;
+}
+
+.message-bubble strong { font-weight: bold; color: #0f172a; }
+.message-row.usuario .message-bubble strong { color: #ffffff; }
+
+/* Rodapé (Input) */
+.chat-input-area {
+  padding: 15px 20px;
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 12px 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 25px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.chat-input-area input:focus { border-color: #1E3A8A; }
+
+.chat-input-area button {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: #1E3A8A;
+  color: white;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.chat-input-area button:hover:not(:disabled) { transform: scale(1.05); }
+.chat-input-area button:disabled { background-color: #94a3b8; cursor: not-allowed; }
+.chat-input-area button svg { width: 20px; height: 20px; }
+
+/* Animação dos "Três Pontinhos" */
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 12px 16px !important;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  background-color: #94a3b8;
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}

@@ -1,0 +1,42 @@
+<div class="xsig-theme">
+  <div class="chat-container">
+
+    <div class="chat-header">
+      <div class="header-avatar">🤖</div>
+      <div class="header-info">
+        <h2>Assistente X-SIG</h2>
+        <div class="status">
+          <span class="status-dot"></span>
+          <p>Online | FAPEMAT</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-messages" #scrollMe>
+      <div *ngFor="let msg of mensagens" class="message-row" [ngClass]="msg.autor">
+        <div class="message-bubble" [innerHTML]="formatarTexto(msg.texto)"></div>
+      </div>
+
+      <div class="message-row ia" *ngIf="carregando">
+        <div class="message-bubble typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <input type="text"
+             [(ngModel)]="novaMensagem"
+             (keyup.enter)="enviarMensagem()"
+             placeholder="Pergunte sobre um bolsista..."
+             [disabled]="carregando">
+
+      <button (click)="enviarMensagem()" [disabled]="carregando || !novaMensagem.trim()">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</div>
