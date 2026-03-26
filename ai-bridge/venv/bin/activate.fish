@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /home/leticia/Documentos/mini-xsig-workspace/mcp-python/venv
+set -gx VIRTUAL_ENV /home/leticia/Documentos/mini-xsig-workspace/ai-bridge/venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH
