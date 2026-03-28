@@ -1,41 +1,56 @@
-<div class="xsig-theme">
+<div class="orion-layout">
   <div class="chat-container">
 
     <div class="chat-header">
-      <div class="header-avatar">🤖</div>
-      <div class="header-info">
-        <h2>Assistente X-SIG</h2>
-        <div class="status">
-          <span class="status-dot"></span>
-          <p>Online | FAPEMAT</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="chat-messages" #scrollMe>
-      <div *ngFor="let msg of mensagens" class="message-row" [ngClass]="msg.autor">
-        <div class="message-bubble" [innerHTML]="formatarTexto(msg.texto)"></div>
-      </div>
-
-      <div class="message-row ia" *ngIf="carregando">
-        <div class="message-bubble typing-indicator">
-          <span></span><span></span><span></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="chat-input-area">
-      <input type="text"
-             [(ngModel)]="novaMensagem"
-             (keyup.enter)="enviarMensagem()"
-             placeholder="Pergunte sobre um bolsista..."
-             [disabled]="carregando">
-
-      <button (click)="enviarMensagem()" [disabled]="carregando || !novaMensagem.trim()">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <div class="orion-avatar">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+          <path d="M2 12h20"></path>
         </svg>
-      </button>
+      </div>
+      <div class="header-info">
+        <h1>Orion Context Engine</h1>
+        <span class="status-indicator">
+          <span class="dot online"></span> Conectado ao X-SIG Nexus
+        </span>
+      </div>
+    </div>
+
+    <div class="chat-body" #chatScroll>
+
+      @for (msg of mensagens; track msg) {
+        <div [ngClass]="{'message-wrapper-user': msg.role === 'user', 'message-wrapper-orion': msg.role === 'orion'}">
+          <div class="message" [ngClass]="msg.role">
+            <p>{{ msg.texto }}</p>
+          </div>
+        </div>
+      }
+
+      @if (carregando) {
+        <div class="message-wrapper-orion">
+          <div class="message orion loading-container">
+            <div class="spinner"></div>
+            <span class="loading-text">Processando no X-SIG...</span>
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <div class="chat-footer">
+      <div class="input-group">
+        <input
+          type="text"
+          [(ngModel)]="novaMensagem"
+          (keyup.enter)="enviarMensagem()"
+          placeholder="Comande o Orion..."
+          [disabled]="carregando"
+        />
+        <button class="send-btn" (click)="enviarMensagem()" [disabled]="carregando || !novaMensagem.trim()">
+          Enviar
+        </button>
+      </div>
     </div>
 
   </div>

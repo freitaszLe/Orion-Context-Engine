@@ -1,61 +1,63 @@
-import { Component, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+
+import { Component, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpClientModule} from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  imports: [CommonModule, FormsModule, HttpClientModule],
+  templateUrl: './app.html',   // <-- Tire o ".component"
+  styleUrls: ['./app.scss']    // <-- Tire o ".component"
 })
 export class AppComponent implements AfterViewChecked {
-  @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
+  @ViewChild('chatScroll') private chatScrollContainer!: ElementRef;
 
-  mensagens: { texto: string, autor: 'usuario' | 'ia' }[] = [
-    { texto: 'Olá! Sou o assistente inteligente do X-SIG. Digite o ID de um bolsista para eu consultar.', autor: 'ia' }
+  // Variável que o HTML está reclamando
+  mensagens: { role: string, texto: string }[] = [
+    { role: 'orion', texto: 'Olá! Eu sou o Orion Context Engine, o assistente virtual inteligente do sistema X-SIG da FAPEMAT. Como posso te ajudar hoje?' }
   ];
 
+  // Variáveis adicionais necessárias
   novaMensagem: string = '';
-  carregando: boolean = false; // Controla a animação de "digitando..."
+  carregando: boolean = false;
 
   constructor(private http: HttpClient) {}
 
+  // Garante que a tela role para baixo sempre que uma nova mensagem chegar
   ngAfterViewChecked() {
     this.rolarParaBaixo();
   }
 
   rolarParaBaixo(): void {
     try {
-      this.myScrollContainer.nativeElement.scrollTop = this.myScrollContainer.nativeElement.scrollHeight;
+      this.chatScrollContainer.nativeElement.scrollTop = this.chatScrollContainer.nativeElement.scrollHeight;
     } catch(err) { }
   }
 
+  // Função que o HTML está reclamando
   enviarMensagem() {
-    if (this.novaMensagem.trim() === '' || this.carregando) return;
+    if (!this.novaMensagem.trim() || this.carregando) return;
 
-    let textoDigitado = this.novaMensagem;
-    this.mensagens.push({ texto: textoDigitado, autor: 'usuario' });
+    const textoUsuario = this.novaMensagem;
+    // 1. Coloca a mensagem do usuário na tela
+    this.mensagens.push({ role: 'user', texto: textoUsuario });
     this.novaMensagem = '';
-    this.carregando = true; // Liga a animação de pensar
+    this.carregando = true;
 
-    this.http.post<any>('http://localhost:8000/api/chat', { texto: textoDigitado })
+    // 2. Bate na porta 8002 onde está a nossa AI Bridge (FastAPI)
+    this.http.post<{mensagem: string}>('http://localhost:8002/api/chat', { texto: textoUsuario })
       .subscribe({
-        next: (resposta) => {
-          this.mensagens.push({ texto: resposta.mensagem, autor: 'ia' });
-          this.carregando = false; // Desliga a animação
+        next: (res) => {
+          this.mensagens.push({ role: 'orion', texto: res.mensagem });
+          this.carregando = false;
         },
-        error: (erro) => {
-          this.mensagens.push({ texto: 'Ops! O servidor parece estar desligado.', autor: 'ia' });
+        error: (err) => {
+          console.error(err);
+          this.mensagens.push({ role: 'orion', texto: 'Desculpe, a conexão com o núcleo do Llama 3.1 falhou. Verifique se o servidor FastAPI está rodando na porta 8002.' });
           this.carregando = false;
         }
       });
-  }
-
-  // Pega o texto do Gemini e transforma **texto** em negrito e \n em quebra de linha
-  formatarTexto(texto: string): string {
-    let formatado = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    return formatado.replace(/\n/g, '<br>');
   }
 }
