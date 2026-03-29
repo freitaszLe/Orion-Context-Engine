@@ -1,20 +1,19 @@
 import ollama
 from app.core.config import HOST_OLLAMA, MODELO_LLAMA, PROMPT_SISTEMA_ORION
-from app.tools.xsig_tools import consultar_bolsista_no_java, cadastrar_edital, listar_bolsistas
+from app.tools.xsig_tools import consultar_bolsista_no_java, cadastrar_edital, listar_bolsistas, listar_editais, vincular_bolsista_no_edital
 
-# Inicializa o cliente Ollama
 cliente_llama = ollama.Client(host=HOST_OLLAMA)
 
 # Dicionário de ferramentas
 ferramentas_disponiveis = {
     "consultar_bolsista_no_java": consultar_bolsista_no_java,
     "cadastrar_edital": cadastrar_edital,
-    "listar_bolsistas": listar_bolsistas
+    "listar_bolsistas": listar_bolsistas,
+    "listar_editais": listar_editais,
+    "vincular_bolsista_no_edital": vincular_bolsista_no_edital
 }
 
 def interagir_com_ia(mensagem_usuario: str) -> str:
-    """Função principal que gerencia o ciclo de vida do Agente (Pensar -> Agir -> Responder)"""
-    
     mensagens_chat = [
         {"role": "system", "content": PROMPT_SISTEMA_ORION},
         {"role": "user", "content": mensagem_usuario}
@@ -22,11 +21,11 @@ def interagir_com_ia(mensagem_usuario: str) -> str:
 
     print("\n🧠 [IA] Enviando pergunta para o Llama 3.1 no laboratório...")
     
-    # 1. IA pensa e decide se usa ferramenta
+    # 3. Adicione a função na lista 'tools' aqui:
     resposta_ia = cliente_llama.chat(
         model=MODELO_LLAMA,
         messages=mensagens_chat,
-        tools=[consultar_bolsista_no_java, cadastrar_edital, listar_bolsistas]
+        tools=[consultar_bolsista_no_java, cadastrar_edital, listar_bolsistas, listar_editais, vincular_bolsista_no_edital]
     )
 
     mensagens_chat.append(resposta_ia['message'])

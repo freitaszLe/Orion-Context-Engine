@@ -1,177 +1,181 @@
-/* Fundo geral para dar destaque ao chat */
-.xsig-theme {
+// src/app/app.component.scss
+
+// Variáveis do Tema Dark/Tech
+$bg-dark: #0f172a;
+$bg-panel: #1e293b;
+$primary: #3b82f6;
+$primary-hover: #2563eb;
+$text-light: #f8fafc;
+$text-muted: #94a3b8;
+$user-msg: #3b82f6;
+$orion-msg: #334155;
+
+.orion-layout {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: #e2e8f0; /* Fundo cinza escuro para destacar o chat branco */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  background-color: $bg-dark;
+  font-family: system-ui, -apple-system, sans-serif;
   padding: 20px;
 }
 
-/* Container Principal */
 .chat-container {
   width: 100%;
   max-width: 800px;
-  height: 80vh;
-  background-color: #ffffff;
+  height: 85vh;
+  background-color: $bg-panel;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15); /* Sombra elegante */
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #334155;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
-/* Cabeçalho com Azul FAPEMAT garantido */
 .chat-header {
-  background: linear-gradient(135deg, #1E3A8A, #3b82f6);
-  color: white;
-  padding: 15px 20px;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
-  gap: 15px;
+  border-bottom: 1px solid #334155;
+  background-color: rgba(15, 23, 42, 0.5);
+
+  .orion-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, $primary, #8b5cf6);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 1.3rem;
+    margin-right: 15px;
+  }
+
+  .header-info h1 {
+    margin: 0;
+    color: $text-light;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .status-indicator {
+    color: $text-muted;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      &.online { background-color: #10b981; }
+    }
+  }
 }
 
-.header-avatar {
-  font-size: 2rem;
-  background: rgba(255,255,255,0.2);
-  padding: 8px;
-  border-radius: 50%;
-}
-
-.header-info h2 {
-  margin: 0;
-  font-size: 1.3rem;
-  font-weight: 600;
-}
-
-.status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #4ade80; /* Verde online */
-  border-radius: 50%;
-  box-shadow: 0 0 8px #4ade80;
-}
-
-.status p {
-  margin: 0;
-  font-size: 0.85rem;
-  opacity: 0.9;
-}
-
-/* Área de Mensagens */
-.chat-messages {
+.chat-body {
   flex: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  background-color: #f8fafc;
+  gap: 16px;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+  .message-wrapper-user { display: flex; justify-content: flex-end; }
+  .message-wrapper-orion { display: flex; justify-content: flex-start; }
+
+  .message {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+
+    p { margin: 0; }
+
+    &.user {
+      background-color: $user-msg;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    &.orion {
+      background-color: $orion-msg;
+      color: $text-light;
+      border-bottom-left-radius: 4px;
+    }
+  }
 }
 
-.message-row {
+.chat-footer {
+  padding: 16px 24px;
+  background-color: rgba(15, 23, 42, 0.3);
+  border-top: 1px solid #334155;
+
+  .input-group {
+    display: flex;
+    gap: 12px;
+
+    input {
+      flex: 1;
+      background-color: #0f172a;
+      border: 1px solid #475569;
+      color: $text-light;
+      padding: 12px 16px;
+      border-radius: 8px;
+      &:focus { outline: none; border-color: $primary; }
+      &::placeholder { color: #64748b; }
+    }
+
+    .send-btn {
+      background-color: $primary;
+      color: white;
+      border: none;
+      padding: 0 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      &:hover:not(:disabled) { background-color: $primary-hover; }
+      &:disabled { background-color: #475569; cursor: not-allowed; }
+    }
+  }
+}
+// Adicione isso dentro ou logo após as regras do .chat-body
+
+.loading-container {
   display: flex;
-  width: 100%;
-}
-
-.message-row.usuario { justify-content: flex-end; }
-.message-row.ia { justify-content: flex-start; }
-
-.message-bubble {
-  max-width: 75%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 1rem;
-  line-height: 1.5;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Cores das Bolhas (AGORA VAI FUNCIONAR!) */
-.message-row.ia .message-bubble {
-  background-color: #ffffff;
-  color: #334155;
-  border: 1px solid #e2e8f0;
-  border-top-left-radius: 2px;
-}
-
-.message-row.usuario .message-bubble {
-  background-color: #10B981; /* Verde sólido garantido */
-  color: #ffffff; /* Texto branco */
-  border-top-right-radius: 2px;
-}
-
-.message-bubble strong { font-weight: bold; color: #0f172a; }
-.message-row.usuario .message-bubble strong { color: #ffffff; }
-
-/* Rodapé (Input) */
-.chat-input-area {
-  padding: 15px 20px;
-  background-color: #ffffff;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
+  align-items: center;
   gap: 12px;
-  align-items: center;
+  padding: 4px 8px;
+
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top-color: $primary; /* Usa o azul tecnológico do tema */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .loading-text {
+    font-size: 0.9rem;
+    color: $text-light;
+    font-style: italic;
+    animation: pulseText 1.5s infinite;
+  }
 }
 
-.chat-input-area input {
-  flex: 1;
-  padding: 12px 18px;
-  border: 1px solid #cbd5e1;
-  border-radius: 25px;
-  font-size: 1rem;
-  outline: none;
-  transition: border 0.2s;
+// Keyframes para as animações
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.chat-input-area input:focus { border-color: #1E3A8A; }
-
-.chat-input-area button {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  background-color: #1E3A8A;
-  color: white;
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
-}
-
-.chat-input-area button:hover:not(:disabled) { transform: scale(1.05); }
-.chat-input-area button:disabled { background-color: #94a3b8; cursor: not-allowed; }
-.chat-input-area button svg { width: 20px; height: 20px; }
-
-/* Animação dos "Três Pontinhos" */
-.typing-indicator {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  padding: 12px 16px !important;
-}
-
-.typing-indicator span {
-  width: 8px;
-  height: 8px;
-  background-color: #94a3b8;
-  border-radius: 50%;
-  animation: bounce 1.4s infinite ease-in-out both;
-}
-
-.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+@keyframes pulseText {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
