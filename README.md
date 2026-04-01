@@ -106,6 +106,7 @@ Separação em camadas permite evolução independente.
 5. Backend valida regras  
 6. Resposta retorna (sucesso ou erro)  
 7. IA traduz para linguagem natural  
+<img width="1976" height="2743" alt="mermaid-diagram-2026-04-01-121943" src="https://github.com/user-attachments/assets/ddcb9610-a7b5-4fc3-85a2-83023caf5824" />
 
 ---
 
