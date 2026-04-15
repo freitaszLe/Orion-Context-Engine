@@ -112,43 +112,48 @@ Separação em camadas permite evolução independente.
 
 ## Como Executar o Projeto
 
+A infraestrutura do Orion foi totalmente **containerizada (Docker)**, garantindo um ambiente isolado, escalável e de rápida implantação, eliminando a necessidade de configurar as stacks de desenvolvimento localmente.
+
 ### Pré-requisitos
-- Java 21
-- Python 3.12
-- Node.js 18+
-- Angular CLI
-- Acesso ao servidor do Llama (SSH)
+- Docker e Docker Compose instalados na máquina local.
+- Acesso via SSH ao servidor institucional (IFMT) que hospeda o modelo LLM.
 
 ---
 
-### 🔹 1. Backend (Spring Boot)
+### 🔹 1. Conexão com o Núcleo Cognitivo (Túnel SSH)
+Para garantir a segurança institucional e o processamento off-machine, a IA não roda no ambiente local. É necessário criar uma ponte entre a rede do Docker e o servidor do IFMT utilizando o gateway padrão do Docker (ex: `172.17.0.1` em ambientes Linux).
 
+Em um terminal na sua máquina, execute e mantenha o processo ativo:
 ```bash
-cd core-api
-./mvnw spring-boot:run
+ssh -L 172.17.0.1:11435:localhost:11434 'usuarioLogin'
 ```
 
-Rodando em: http://localhost:8081
+### 🔹 2. Orquestração do Ecossistema
+Na raiz do projeto, utilize o script de inicialização automatizado. Ele será responsável por realizar o build e subir todos os microsserviços (Banco de Dados, MinIO, Core API Java, AI Bridge Python e Web Portal Angular).
 
-### 🔹 2. Túnel SSH (LLM)
-
-### 🔹 3. AI Bridge (FastAPI)
 ```bash
-cd ai-bridge
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8002
+chmod +x init.sh
+./init.sh
 ```
+### 🔹 3. Acesso aos Módulos
+Após a confirmação de que os containers estão saudáveis, os serviços estarão acessíveis via:
 
-### 🔹 4. Frontend (Angular)
-```bash
-cd web-portal
-npm install
-ng serve
-```
+Web Portal (Interface de Chat): http://localhost:4200
+
+AI Bridge (Documentação OpenAPI): http://localhost:8002/docs
+
+Core API (Backend API): http://localhost:8081/api/editais
+
+Armazenamento de Arquivos (MinIO Console): http://localhost:9001
 
 Acesse: http://localhost:4200
 
+🔹 4. Encerramento e Limpeza
+Para desligar de forma segura toda a arquitetura, parando os serviços e limpando a rede interna do Docker, execute:
+
+```Bash
+./stop.sh
+```
 ## 🧪 Como Testar
 
 #### Exemplos de prompts:
