@@ -21,7 +21,7 @@ services:
     networks:
       - orion-network
 
-  # Armazenamento de Objetos
+  # Armazenamento de Objetos (FAPEMAT Docs)
   minio:
     image: minio/minio:latest
     container_name: orion_minio
@@ -61,21 +61,28 @@ services:
     networks:
       - orion-network
 
-  # AI Bridge Python (Orquestrador MCP)
+  # AI Bridge Python (Orquestrador MCP Real)
   ai-bridge:
     build:
       context: ./ai-bridge
       dockerfile: Dockerfile
     container_name: orion_ai_bridge
     ports:
-      - "8002:8002"
+      - "8002:8002" # Chat Web (FastAPI)
+      - "8000:8000" # Servidor MCP (SSE/HTTP) - NOVO!
     volumes:
       - ./ai-bridge/logs:/app/logs
     environment:
-      URL_BASE_JAVA: "http://core-api:8081/api"
-      HOST_OLLAMA: "http://host.docker.internal:11435"
+      - PYTHONPATH=/app  # <--- ADICIONE ISSO AQUI
+      - URL_BASE_JAVA=http://core-api:8081/api
+      - HOST_OLLAMA=http://host.docker.internal:11435
+      - MCP_SERVER_URL=http://localhost:8000/sse
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # COMANDO PARA RODAR OS DOIS PROCESSOS
+    command: >
+      sh -c "python3 -m app.mcp_server & 
+             uvicorn app.main:app --host 0.0.0.0 --port 8002"
     depends_on:
       - core-api
     networks:
