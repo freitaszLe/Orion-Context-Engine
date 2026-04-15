@@ -1,57 +1,15 @@
 <div class="orion-layout">
-  <div class="chat-container">
+  <div class="main-wrapper">
 
-    <div class="chat-header">
-      <div class="orion-avatar">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-          <path d="M2 12h20"></path>
-        </svg>
-      </div>
-      <div class="header-info">
-        <h1>Orion Context Engine</h1>
-        <span class="status-indicator">
-          <span class="dot online"></span> Conectado ao X-SIG Nexus
-        </span>
-      </div>
-    </div>
+    <app-chat
+      [mensagens]="mensagens"
+      [carregando]="carregando"
+      (enviar)="processarComando($event)">
+    </app-chat>
 
-    <div class="chat-body" #chatScroll>
-
-      @for (msg of mensagens; track msg) {
-        <div [ngClass]="{'message-wrapper-user': msg.role === 'user', 'message-wrapper-orion': msg.role === 'orion'}">
-          <div class="message" [ngClass]="msg.role">
-            <p>{{ msg.texto }}</p>
-          </div>
-        </div>
-      }
-
-      @if (carregando) {
-        <div class="message-wrapper-orion">
-          <div class="message orion loading-container">
-            <div class="spinner"></div>
-            <span class="loading-text">Processando no X-SIG...</span>
-          </div>
-        </div>
-      }
-
-    </div>
-
-    <div class="chat-footer">
-      <div class="input-group">
-        <input
-          type="text"
-          [(ngModel)]="novaMensagem"
-          (keyup.enter)="enviarMensagem()"
-          placeholder="Comande o Orion..."
-          [disabled]="carregando"
-        />
-        <button class="send-btn" (click)="enviarMensagem()" [disabled]="carregando || !novaMensagem.trim()">
-          Enviar
-        </button>
-      </div>
-    </div>
+    <app-execution-log
+      [logs]="logsExecucao">
+    </app-execution-log>
 
   </div>
 </div>

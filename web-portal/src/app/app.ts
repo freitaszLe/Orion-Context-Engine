@@ -1,63 +1,61 @@
-
-import { Component, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import {HttpClient, HttpClientModule} from '@angular/common/http';
+import { DomSanitizer } from '@angular/platform-browser';
+import { OrionService } from './services/orion.service';
+import { Mensagem, LogExecucao } from './models/chat.model';
+import { ChatComponent } from './components/chat/chat.component';
+import { ExecutionLogComponent } from './components/execution-log/execution-log.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
-  templateUrl: './app.html',   // <-- Tire o ".component"
-  styleUrls: ['./app.scss']    // <-- Tire o ".component"
+  imports: [CommonModule, ChatComponent, ExecutionLogComponent],
+  templateUrl: './app.html',
+  styleUrls: ['./app.scss']
 })
-export class AppComponent implements AfterViewChecked {
-  @ViewChild('chatScroll') private chatScrollContainer!: ElementRef;
-
-  // Variável que o HTML está reclamando
-  mensagens: { role: string, texto: string }[] = [
-    { role: 'orion', texto: 'Olá! Eu sou o Orion Context Engine, o assistente virtual inteligente do sistema X-SIG da FAPEMAT. Como posso te ajudar hoje?' }
+export class AppComponent {
+  mensagens: Mensagem[] = [
+    { role: 'orion', texto: 'Olá! Eu sou o Orion Context Engine. Como posso ajudar?' }
   ];
+  logsExecucao: LogExecucao[] = [];
+  carregando = false;
 
-  // Variáveis adicionais necessárias
-  novaMensagem: string = '';
-  carregando: boolean = false;
+  constructor(
+    private orionService: OrionService, 
+    private sanitizer: DomSanitizer
+  ) {}
 
-  constructor(private http: HttpClient) {}
-
-  // Garante que a tela role para baixo sempre que uma nova mensagem chegar
-  ngAfterViewChecked() {
-    this.rolarParaBaixo();
+  private formatarResposta(textoBruto: string) {
+    let formatado = textoBruto.replace(/\n/g, '<br>');
+    formatado = formatado.replace(/\*\s/g, '• ');
+    return this.sanitizer.bypassSecurityTrustHtml(formatado);
   }
 
-  rolarParaBaixo(): void {
-    try {
-      this.chatScrollContainer.nativeElement.scrollTop = this.chatScrollContainer.nativeElement.scrollHeight;
-    } catch(err) { }
+  private adicionarLog(titulo: string, detalhe: string, tipo: LogExecucao['tipo'] = 'info') {
+    this.logsExecucao.unshift({ 
+      hora: new Date().toLocaleTimeString(), 
+      titulo, detalhe, tipo 
+    });
   }
 
-  // Função que o HTML está reclamando
-  enviarMensagem() {
-    if (!this.novaMensagem.trim() || this.carregando) return;
-
-    const textoUsuario = this.novaMensagem;
-    // 1. Coloca a mensagem do usuário na tela
+  processarComando(textoUsuario: string) {
     this.mensagens.push({ role: 'user', texto: textoUsuario });
-    this.novaMensagem = '';
     this.carregando = true;
 
-    // 2. Bate na porta 8002 onde está a nossa AI Bridge (FastAPI)
-    this.http.post<{mensagem: string}>('http://localhost:8002/api/chat', { texto: textoUsuario })
-      .subscribe({
-        next: (res) => {
-          this.mensagens.push({ role: 'orion', texto: res.mensagem });
-          this.carregando = false;
-        },
-        error: (err) => {
-          console.error(err);
-          this.mensagens.push({ role: 'orion', texto: 'Desculpe, a conexão com o núcleo do Llama 3.1 falhou. Verifique se o servidor FastAPI está rodando na porta 8002.' });
-          this.carregando = false;
-        }
-      });
+    this.adicionarLog('Usuário', textoUsuario);
+    this.adicionarLog('Orquestrador', 'Enviando intenção para o Llama 3.1...');
+
+    this.orionService.enviarMensagem(textoUsuario).subscribe({
+      next: (res) => {
+        this.mensagens.push({ role: 'orion', texto: this.formatarResposta(res.mensagem) });
+        this.adicionarLog('IA Core', 'Processamento concluído.', 'success');
+        this.carregando = false;
+      },
+      error: () => {
+        this.adicionarLog('Falha', 'Erro de conexão.', 'error');
+        this.mensagens.push({ role: 'orion', texto: 'Conexão falhou.' });
+        this.carregando = false;
+      }
+    });
   }
 }

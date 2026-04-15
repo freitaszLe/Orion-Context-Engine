@@ -1,0 +1,39 @@
+<div class="execution-log" [class.collapsed]="!logAberto">
+  <div class="log-header" (click)="alternarLog()">
+    <h3>
+      <svg
+        [class.rotate]="logAberto"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+      Rastro de Execução (Audit)
+    </h3>
+
+    <span class="badge">{{ logs.length }}</span>
+  </div>
+
+  @if (logAberto) {
+    <div class="log-content">
+      @if (logs.length === 0) {
+        <div class="empty-log">Aguardando comando...</div>
+      }
+
+      @for (log of logs; track $index) {
+        <div class="log-item" [ngClass]="log.tipo">
+          <span class="log-time">{{ log.hora }}</span>
+          <p class="log-msg">
+            <strong>{{ log.titulo }}:</strong> {{ log.detalhe }}
+          </p>
+        </div>
+      }
+    </div>
+  }
+</div>

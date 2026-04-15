@@ -1,1 +1,23 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --bg-dark: #0f172a;
+  --bg-panel: #1e293b;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --text-light: #f8fafc;
+  --text-muted: #94a3b8;
+  --user-msg: #3b82f6;
+  --orion-msg: #334155;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: var(--bg-dark);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text-light);
+}
+
+* {
+  box-sizing: border-box;
+}
