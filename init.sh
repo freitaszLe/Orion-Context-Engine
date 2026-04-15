@@ -52,10 +52,11 @@ show_urls() {
     echo ""
     echo -e "${BLUE}ENDPOINTS DISPONÍVEIS${NC}"
     echo -e "${BLUE}─────────────────────────────────────${NC}"
-    echo -e "  🌐 Portal Chat:      ${GREEN}http://localhost:4200${NC}"
-    echo -e "  🧠 AI Bridge:        ${GREEN}http://localhost:8002/docs${NC}"
-    echo -e "  ☕ Core API (Java):   ${GREEN}http://localhost:8081/api/editais${NC}"
-    echo -e "  📦 MinIO Storage:    ${GREEN}http://localhost:9001${NC}"
+    echo -e "  🌐 Portal Chat:       ${GREEN}http://localhost:4200${NC}"
+    echo -e "  🧠 AI Bridge (API):   ${GREEN}http://localhost:8002/docs${NC}"
+    echo -e "  📡 MCP Server (SSE):  ${GREEN}http://localhost:8000${NC}" # Nova porta!
+    echo -e "  ☕ Core API (Java):    ${GREEN}http://localhost:8081/api/editais${NC}"
+    echo -e "  📦 MinIO Storage:     ${GREEN}http://localhost:9001${NC}"
     echo ""
 }
 

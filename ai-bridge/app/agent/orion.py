@@ -1,83 +1,80 @@
 import ollama
+import asyncio
+from mcp import ClientSession
+from mcp.client.sse import sse_client
 from app.core.config import HOST_OLLAMA, MODELO_LLAMA, PROMPT_SISTEMA_ORION
-from app.tools.xsig_tools import consultar_bolsista_no_java, cadastrar_edital, listar_bolsistas, listar_editais, vincular_bolsista_no_edital
 from app.service.audit_service import registrar_auditoria
 
-cliente_llama = ollama.Client(host=HOST_OLLAMA)
-
-# Dicionário de ferramentas
-ferramentas_disponiveis = {
-    "consultar_bolsista_no_java": consultar_bolsista_no_java,
-    "cadastrar_edital": cadastrar_edital,
-    "listar_bolsistas": listar_bolsistas,
-    "listar_editais": listar_editais,
-    "vincular_bolsista_no_edital": vincular_bolsista_no_edital
-}
-
-def interagir_com_ia(mensagem_usuario: str) -> str:
-    # === INÍCIO DA AUDITORIA ===
+async def interagir_com_ia(mensagem_usuario: str) -> str:
     rastro = {
         "usuario_input": mensagem_usuario,
         "decisoes_ia": [],
         "respostas_backend": [],
         "resposta_final": ""
     }
-    # ===========================
 
-    mensagens_chat = [
-        {"role": "system", "content": PROMPT_SISTEMA_ORION},
-        {"role": "user", "content": mensagem_usuario}
-    ]
+    # 1. Abre a conexão SSE com o Servidor MCP
+    async with sse_client("http://localhost:8000/sse") as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            mcp_tools = await session.list_tools()
 
-    print("\n🧠 [IA] Enviando pergunta para o Llama 3.1 no laboratório...")
-    
-    # 3. Adicione a função na lista 'tools' aqui:
-    resposta_ia = cliente_llama.chat(
-        model=MODELO_LLAMA,
-        messages=mensagens_chat,
-        tools=[consultar_bolsista_no_java, cadastrar_edital, listar_bolsistas, listar_editais, vincular_bolsista_no_edital]
-    )
+            # 2. Formata as ferramentas para o Ollama 
+            tools_llama = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": t.name,
+                        "description": t.description,
+                        "parameters": t.inputSchema
+                    }
+                } for t in mcp_tools.tools
+            ]
 
-    mensagens_chat.append(resposta_ia['message'])
+            mensagens_chat = [
+                {"role": "system", "content": PROMPT_SISTEMA_ORION},
+                {"role": "user", "content": mensagem_usuario}
+            ]
 
-    # 2. Se não tem ferramentas, responde direto (Bate-papo normal)
-    if not resposta_ia['message'].get('tool_calls'):
-        print("🗣️ [IA] Llama respondeu diretamente (sem usar ferramentas).")
-        
-        # Salva auditoria do bate-papo normal
-        rastro["resposta_final"] = resposta_ia['message']['content']
-        registrar_auditoria(rastro)
-        
-        return resposta_ia['message']['content']
-
-    # 3. Se pediu ferramenta, o Python executa (Ação)
-    for tool in resposta_ia['message']['tool_calls']:
-        nome_funcao = tool['function']['name']
-        argumentos = tool['function']['arguments']
-        
-        # Salva a decisão da IA na auditoria
-        rastro["decisoes_ia"].append({"tool": nome_funcao, "args": argumentos})
-        
-        if nome_funcao in ferramentas_disponiveis:
-            funcao_python = ferramentas_disponiveis[nome_funcao]
-            resultado_ferramenta = funcao_python(**argumentos)
+            # === Usa o cliente Assíncrono ===
+            async_ollama = ollama.AsyncClient(host=HOST_OLLAMA)
             
-            # Salva o resultado do backend na auditoria
-            rastro["respostas_backend"].append(resultado_ferramenta)
-            
-            # Salva o resultado no histórico
-            mensagens_chat.append({
-                "role": "tool",
-                "content": str(resultado_ferramenta),
-                "name": nome_funcao
-            })
+            # Primeira chamada (IA decide o que fazer)
+            resposta = await async_ollama.chat(
+                model=MODELO_LLAMA, 
+                messages=mensagens_chat, 
+                tools=tools_llama
+            )
+            mensagens_chat.append(resposta['message'])
 
-    # 4. IA lê o resultado e formula a resposta humanizada
-    print("🗣️ [IA] Llama leu os dados do Java e está gerando a resposta final...")
-    resposta_final = cliente_llama.chat(model=MODELO_LLAMA, messages=mensagens_chat)
-    
-    # Salva a resposta final traduzida e finaliza a auditoria
-    rastro["resposta_final"] = resposta_final['message']['content']
-    registrar_auditoria(rastro)
-    
-    return resposta_final['message']['content']
+            # 3. Execução de ferramentas via MCP
+            if resposta['message'].get('tool_calls'):
+                for tool in resposta['message']['tool_calls']:
+                    nome_f = tool['function']['name']
+                    args_f = tool['function']['arguments']
+
+                    rastro["decisoes_ia"].append({"tool": nome_f, "args": args_f})
+
+                    # Chama o servidor MCP e aguarda o resultado
+                    resultado_mcp = await session.call_tool(nome_f, args_f)
+                    
+                    # O MCP retorna uma lista. Pegamos o texto do primeiro item.
+                    texto_resultado = resultado_mcp.content[0].text if resultado_mcp.content else "{}"
+                    
+                    rastro["respostas_backend"].append(texto_resultado)
+
+                    mensagens_chat.append({
+                        "role": "tool",
+                        "content": texto_resultado,
+                        "name": nome_f
+                    })
+
+                # Segunda chamada: IA humaniza os dados retornados
+                resposta_final = await async_ollama.chat(model=MODELO_LLAMA, messages=mensagens_chat)
+                rastro["resposta_final"] = resposta_final['message']['content']
+            else:
+                rastro["resposta_final"] = resposta['message']['content']
+
+            # 4. Finaliza a Auditoria e retorna
+            registrar_auditoria(rastro)
+            return rastro["resposta_final"]
