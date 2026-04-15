@@ -1,5 +1,5 @@
-URL_BASE_JAVA = "http://localhost:8081/api"
-HOST_OLLAMA = 'http://127.0.0.1:11435'  # Porta do Túnel SSH
+URL_BASE_JAVA = "http://core-api:8081/api"
+HOST_OLLAMA = 'http://172.17.0.1:11435'  # IP fixo da ponte Docker
 MODELO_LLAMA = 'llama3.1'
 
 

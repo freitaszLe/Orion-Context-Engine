@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # Banco de Dados do Orion
+  db_orion:
+    image: postgres:15-alpine
+    container_name: orion_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: orion_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d orion_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orion-network
+
+  # Armazenamento de Objetos
+  minio:
+    image: minio/minio:latest
+    container_name: orion_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orion-network
+
+  # Backend Java (Core API)
+  core-api:
+    build:
+      context: ./core-api
+      dockerfile: Dockerfile
+    container_name: orion_core_api
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db_orion:5432/orion_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      db_orion:
+        condition: service_healthy
+    networks:
+      - orion-network
+
+  # AI Bridge Python (Orquestrador MCP)
+  ai-bridge:
+    build:
+      context: ./ai-bridge
+      dockerfile: Dockerfile
+    container_name: orion_ai_bridge
+    ports:
+      - "8002:8002"
+    environment:
+      URL_BASE_JAVA: "http://core-api:8081/api"
+      HOST_OLLAMA: "http://host.docker.internal:11435"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - core-api
+    networks:
+      - orion-network
+
+  # Web Portal Angular
+  web-portal:
+    build:
+      context: ./web-portal
+      dockerfile: Dockerfile
+    container_name: orion_web_portal
+    ports:
+      - "4200:80"
+    depends_on:
+      - ai-bridge
+    networks:
+      - orion-network
+
+volumes:
+  pg_data:
+  minio_data:
+
+networks:
+  orion-network:
+    driver: bridge
